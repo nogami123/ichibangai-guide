@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>一番街ガイド｜沖縄市</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     ページ1：トップページ
+     ============================================================ -->
+<section class="page" id="page-home">
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <h1 class="topbar__title">一番街ガイド</h1>
+      <a class="btn btn--accent" href="#/events">📅 イベントカレンダー</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ---- 日付・時刻の選択 ---- -->
+    <section class="card picker">
+      <div class="picker__row">
+        <label class="picker__label" for="dateInput">日付</label>
+        <input class="picker__date" type="date" id="dateInput">
+        <button class="btn btn--ghost" type="button" id="btnNow">今に戻す</button>
+      </div>
+
+      <div class="picker__row picker__row--time">
+        <label class="picker__label" for="timeSlider">時刻</label>
+        <output class="picker__time" id="timeOutput">--:--</output>
+      </div>
+      <input class="picker__slider" type="range" id="timeSlider"
+             min="0" max="1425" step="15" value="720"
+             aria-label="時刻を選ぶ">
+      <div class="picker__scale" aria-hidden="true">
+        <span>0時</span><span>6時</span><span>12時</span><span>18時</span><span>24時</span>
+      </div>
+
+      <p class="picker__summary" id="pickerSummary"></p>
+    </section>
+
+    <!-- ---- ジャンル絞り込み ---- -->
+    <div class="filters" id="filters" role="group" aria-label="ジャンルで絞り込み"></div>
+
+    <!-- ---- 地図 ---- -->
+    <section class="card card--flush">
+      <div class="mapbox" id="homeMap"></div>
+      <div class="maplegend">
+        <label class="maplegend__toggle">
+          <input type="checkbox" id="togglePlaces" checked>
+          <span>🅿 駐車場・🚏 バス停を表示</span>
+        </label>
+        <button class="btn btn--ghost btn--sm" type="button" id="btnLocate">📍 現在地</button>
+      </div>
+      <p class="maplegend__note" id="locateNote" hidden></p>
+    </section>
+
+    <!-- ---- 営業中店舗の一覧 ---- -->
+    <section class="listsec">
+      <h2 class="listsec__title">
+        営業中のお店 <span class="listsec__count" id="shopCount">0</span>件
+      </h2>
+      <ul class="shoplist" id="shopList"></ul>
+      <p class="empty" id="emptyMsg" hidden>
+        この日時に営業しているお店はありません。<br>
+        時刻を変えて探してみてください。
+      </p>
+    </section>
+
+    <footer class="foot">
+      <p>※お店の情報はすべて開発用のサンプル（ダミー）です。</p>
+      <p>※距離は地図上の直線距離のめやすです。実際の道のりとは異なります。</p>
+    </footer>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     ページ2：お店詳細ページ
+     ============================================================ -->
+<section class="page" id="page-shop" hidden>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <button class="btn btn--ghost" type="button" id="btnBackFromShop">← 戻る</button>
+      <h1 class="topbar__title topbar__title--sub" id="shopTitle">お店の詳細</h1>
+    </div>
+  </header>
+
+  <div class="mapbox mapbox--detail" id="shopMap"></div>
+
+  <div class="container">
+    <div id="shopBody"></div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     ページ3：イベントカレンダーページ
+     ============================================================ -->
+<section class="page" id="page-events" hidden>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <button class="btn btn--ghost" type="button" id="btnBackFromEvents">← 戻る</button>
+      <h1 class="topbar__title topbar__title--sub">イベントカレンダー</h1>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <section class="card">
+      <div class="cal__head">
+        <button class="btn btn--ghost" type="button" id="btnPrevMonth" aria-label="前の月">‹</button>
+        <h2 class="cal__month" id="calMonth">----年--月</h2>
+        <button class="btn btn--ghost" type="button" id="btnNextMonth" aria-label="次の月">›</button>
+      </div>
+      <div class="cal__grid" id="calGrid"></div>
+      <p class="cal__hint">イベントのある日には <span class="cal__dot cal__dot--demo"></span> がつきます。日付をタップすると下に詳しく出ます。</p>
+    </section>
+
+    <section id="eventDetail"></section>
+
+    <footer class="foot">
+      <p>※イベント情報はすべて開発用のサンプル（ダミー）です。</p>
+    </footer>
+
+  </div>
+</section>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script src="data/shops.js"></script>
+<script src="data/events.js"></script>
+<script src="data/places.js"></script>
+
+<script src="js/utils.js"></script>
+<script src="js/map.js"></script>
+<script src="js/page-home.js"></script>
+<script src="js/page-shop.js"></script>
+<script src="js/page-events.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

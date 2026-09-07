@@ -1,0 +1,484 @@
+/* =============================================================
+ * 一番街ガイド － デザイン
+ *
+ * 色を変えたいときは、いちばん下ではなく :root の中を書き換えます。
+ * ここを直すだけで、アプリ全体の色が変わります。
+ * ============================================================= */
+
+:root{
+  --bg:       #f7f4ef;   /* 背景（生成り色） */
+  --surface:  #ffffff;   /* カードの白 */
+  --line:     #e6e0d6;   /* 区切り線 */
+  --text:     #2b2621;   /* 文字 */
+  --muted:    #7d7568;   /* うすい文字 */
+  --accent:   #c8452f;   /* 赤瓦の色（ボタンなど） */
+  --sea:      #1f7a8c;   /* 海の色（リンクなど） */
+  --open:     #2e8b57;   /* 営業中の緑 */
+  --closed:   #98928a;
+  --radius:   14px;
+  --shadow:   0 4px 16px rgba(43,38,33,.10);
+  --tap:      44px;      /* 指で押しやすい最小の大きさ */
+}
+
+*{ box-sizing:border-box; }
+
+/* ★重要★ これが無いと、hidden をつけてもページが消えません。
+   （display:flex などが hidden より強いため）                    */
+[hidden]{ display:none !important; }
+
+html{ -webkit-text-size-adjust:100%; }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.6;
+}
+
+a{ color:var(--sea); }
+
+.muted{ color:var(--muted); font-weight:normal; }
+
+/* ============ 共通のレイアウト ============ */
+
+.container{
+  width:100%;
+  max-width:760px;         /* PCでは中央に寄せます */
+  margin:0 auto;
+  padding:14px 14px 40px;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:14px;
+  margin-bottom:14px;
+}
+.card--flush{ padding:0; overflow:hidden; }
+
+/* ============ 上部のバー ============ */
+
+.topbar{
+  position:sticky; top:0; z-index:1200;
+  background:var(--accent);
+  color:#fff;
+  box-shadow:0 2px 10px rgba(0,0,0,.18);
+}
+.topbar__inner{
+  max-width:760px; margin:0 auto;
+  padding:10px 14px;
+  display:flex; align-items:center; gap:10px;
+}
+.topbar__title{
+  margin:0; font-size:1.15rem; letter-spacing:.03em;
+  flex:1 1 auto; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.topbar__title--sub{ font-size:1rem; font-weight:600; }
+
+/* ============ ボタン ============ */
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:4px;
+  min-height:var(--tap); padding:8px 14px;
+  border:1px solid transparent; border-radius:999px;
+  background:rgba(255,255,255,.18); color:#fff;
+  font:inherit; font-size:.9rem; font-weight:600;
+  text-decoration:none; cursor:pointer;
+  white-space:nowrap;
+}
+.btn--accent{ background:#fff; color:var(--accent); }
+.btn--ghost{
+  background:var(--surface); color:var(--text);
+  border-color:var(--line);
+}
+.topbar .btn--ghost{ background:rgba(255,255,255,.18); color:#fff; border-color:rgba(255,255,255,.4); }
+.btn--sm{ min-height:36px; padding:6px 12px; font-size:.82rem; }
+.btn:active{ opacity:.75; }
+
+.btnrow{ display:flex; flex-wrap:wrap; gap:8px; }
+.btnrow--mt{ margin-top:12px; }
+
+/* ============ 日付・時刻の選択 ============ */
+
+.picker__row{
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:10px;
+}
+.picker__row--time{ margin-bottom:2px; }
+
+.picker__label{
+  flex:0 0 auto;
+  font-size:.82rem; font-weight:700; color:var(--muted);
+}
+.picker__date{
+  flex:1 1 auto; min-width:0;
+  min-height:var(--tap);
+  padding:6px 10px;
+  border:1px solid var(--line); border-radius:10px;
+  background:var(--bg); color:inherit;
+  font:inherit; font-size:1rem;
+}
+.picker__time{
+  font-size:1.5rem; font-weight:700; letter-spacing:.04em;
+  font-variant-numeric:tabular-nums;
+  color:var(--accent);
+}
+
+/* 時刻のシークバー（指でも動かしやすいよう大きめにしています） */
+.picker__slider{
+  width:100%; margin:6px 0 2px;
+  -webkit-appearance:none; appearance:none;
+  height:34px; background:transparent; cursor:pointer;
+}
+.picker__slider::-webkit-slider-runnable-track{
+  height:8px; border-radius:999px;
+  background:linear-gradient(90deg,#c9d6df,#f3d9a4,#f3b28a,#c9d6df);
+}
+.picker__slider::-moz-range-track{
+  height:8px; border-radius:999px;
+  background:linear-gradient(90deg,#c9d6df,#f3d9a4,#f3b28a,#c9d6df);
+}
+.picker__slider::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:28px; height:28px; margin-top:-10px;
+  border-radius:50%; background:var(--accent);
+  border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.picker__slider::-moz-range-thumb{
+  width:28px; height:28px;
+  border-radius:50%; background:var(--accent);
+  border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+
+.picker__scale{
+  display:flex; justify-content:space-between;
+  font-size:.7rem; color:var(--muted);
+}
+.picker__summary{
+  margin:10px 0 0; padding-top:10px;
+  border-top:1px dashed var(--line);
+  font-size:.85rem; color:var(--muted);
+}
+.picker__summary strong{ color:var(--text); }
+
+/* ============ ジャンルの絞り込み ============ */
+
+.filters{
+  display:flex; gap:8px;
+  overflow-x:auto; padding:2px 2px 10px;
+  -webkit-overflow-scrolling:touch;
+}
+.chip{
+  flex:0 0 auto;
+  min-height:38px; padding:6px 14px;
+  border:1px solid var(--line); border-radius:999px;
+  background:var(--surface); color:var(--text);
+  font:inherit; font-size:.85rem; font-weight:600;
+  cursor:pointer; white-space:nowrap;
+}
+.chip[aria-pressed="true"]{
+  background:var(--chip-color); color:#fff;
+  border-color:var(--chip-color);
+}
+
+/* ============ 地図 ============ */
+
+.mapbox{
+  width:100%; height:46vh; min-height:260px; max-height:440px;
+  background:#dfe4e6;                 /* 読み込み中に真っ白にならないように */
+}
+.mapbox--detail{ height:38vh; min-height:220px; }
+
+.maplegend{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:10px 12px;
+  border-top:1px solid var(--line);
+  font-size:.82rem;
+}
+.maplegend__toggle{
+  display:flex; align-items:center; gap:6px;
+  flex:1 1 auto; cursor:pointer;
+}
+.maplegend__toggle input{ width:18px; height:18px; }
+.maplegend__note{
+  margin:0; padding:0 12px 12px;
+  font-size:.8rem; color:var(--muted);
+}
+.maplegend__note.is-error{ color:var(--accent); }
+
+/* --- 地図のピン（画像を使わず CSS で作っています） --- */
+.pin{ width:34px; height:44px; }
+.pin__head{
+  width:30px; height:30px; margin:0 auto;
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  border:2px solid #fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center;
+}
+.pin__emoji{ transform:rotate(45deg); font-size:15px; line-height:1; }
+.pin.is-active .pin__head{ transform:rotate(-45deg) scale(1.2); }
+
+/* 駐車場・バス停は小さい丸で、お店と見分けがつくようにしています */
+.dot{
+  width:26px; height:26px; border-radius:50%;
+  background:#fff; border:2px solid #9aa5ab;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; box-shadow:0 1px 4px rgba(0,0,0,.25);
+  opacity:.92;
+}
+.dot--parking{ border-color:#4a6f8a; }
+.dot--bus{ border-color:#6f8a4a; }
+
+.userdot{
+  width:18px; height:18px; border-radius:50%;
+  background:#1a73e8; border:3px solid #fff;
+  box-shadow:0 0 0 4px rgba(26,115,232,.25);
+}
+
+/* ============ 営業中のお店の一覧 ============ */
+
+.listsec__title{
+  margin:6px 2px 10px;
+  font-size:1rem;
+}
+.listsec__count{ color:var(--accent); font-size:1.25rem; }
+
+.shoplist{ list-style:none; margin:0; padding:0; }
+.shoplist li{ margin-bottom:10px; }
+
+.shopitem{
+  width:100%; display:flex; align-items:center; gap:12px;
+  padding:12px; min-height:var(--tap);
+  background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  font:inherit; color:inherit; text-align:left; cursor:pointer;
+}
+.shopitem:active{ background:#faf7f2; }
+
+.shopitem__icon{
+  flex:0 0 auto;
+  width:46px; height:46px; border-radius:12px;
+  border:1px solid;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.shopitem__main{ flex:1 1 auto; min-width:0; display:block; }
+.shopitem__name{
+  display:block; font-size:1.02rem; font-weight:700;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.shopitem__tags{ display:flex; flex-wrap:wrap; gap:5px; margin:4px 0 5px; }
+.shopitem__status{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:.82rem; }
+.shopitem__until{ color:var(--muted); }
+.shopitem__dist{ color:var(--sea); font-weight:600; }
+.shopitem__arrow{ flex:0 0 auto; color:var(--muted); font-size:1.5rem; }
+
+.tag{
+  display:inline-block; padding:2px 8px;
+  border-radius:999px;
+  font-size:.72rem; font-weight:700; color:#fff;
+  line-height:1.5;
+}
+.tag--plain{ background:var(--bg); color:var(--muted); border:1px solid var(--line); }
+.tag--dummy{ background:var(--muted); }
+
+.badge{
+  display:inline-block; padding:2px 9px;
+  border-radius:999px; font-size:.75rem; font-weight:700; color:#fff;
+}
+.badge--open{ background:var(--open); }
+.badge--closed{ background:var(--closed); }
+
+.empty{
+  padding:24px 14px; text-align:center;
+  color:var(--muted); font-size:.9rem;
+  background:var(--surface);
+  border:1px dashed var(--line); border-radius:var(--radius);
+}
+
+/* ============ お店詳細ページ ============ */
+
+.hero{ margin-bottom:14px; }
+.hero__img{
+  width:100%; height:190px; object-fit:cover;
+  border-radius:var(--radius); display:block;
+}
+.hero__ph{
+  height:150px; border-radius:var(--radius);
+  border:1px dashed currentColor;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+}
+.hero__ph span{ font-size:48px; line-height:1; }
+.hero__ph small{ font-size:.75rem; opacity:.8; }
+
+.dt__tags{ display:flex; flex-wrap:wrap; gap:6px; }
+.dt__name{ margin:8px 0 4px; font-size:1.35rem; }
+.dt__desc{ margin:0 0 12px; font-size:.92rem; color:var(--muted); }
+
+.dt__status{
+  padding:10px 12px; border-radius:10px;
+  font-weight:700; font-size:.95rem;
+}
+.dt__status small{ font-weight:normal; font-size:.82rem; margin-left:4px; }
+.dt__status.is-open{ background:#eaf6ef; color:var(--open); }
+.dt__status.is-closed{ background:#f2f0ed; color:#6c665e; }
+
+.sec__title{
+  margin:0 0 10px; font-size:.95rem;
+  padding-bottom:6px; border-bottom:2px solid var(--line);
+}
+
+.factrow{
+  display:flex; gap:10px; padding:7px 0;
+  border-bottom:1px dotted var(--line);
+  font-size:.9rem;
+}
+.factrow:last-of-type{ border-bottom:none; }
+.factrow__key{ flex:0 0 76px; color:var(--muted); font-size:.82rem; padding-top:2px; }
+.factrow__val{ flex:1 1 auto; min-width:0; word-break:break-word; }
+
+.hours{ width:100%; border-collapse:collapse; font-size:.9rem; }
+.hours th{
+  width:44px; text-align:center; font-weight:600; color:var(--muted);
+  padding:6px 0; border-bottom:1px dotted var(--line);
+}
+.hours td{ padding:6px 0; border-bottom:1px dotted var(--line); }
+.hours tr:last-child th, .hours tr:last-child td{ border-bottom:none; }
+.hours .is-today th{ color:var(--accent); }
+.hours .is-today td{ font-weight:700; }
+.hours .is-rest{ color:var(--closed); }
+
+.menu{ list-style:none; margin:0; padding:0; }
+.menu li{
+  display:flex; justify-content:space-between; gap:10px;
+  padding:8px 0; border-bottom:1px dotted var(--line);
+  font-size:.92rem;
+}
+.menu li:last-child{ border-bottom:none; }
+.menu__name{ flex:1 1 auto; }
+.menu__note{ display:block; font-size:.75rem; color:var(--muted); }
+.menu__price{ flex:0 0 auto; font-weight:700; font-variant-numeric:tabular-nums; }
+.pop{
+  display:inline-block; margin-left:6px; padding:1px 7px;
+  background:var(--accent); color:#fff;
+  border-radius:999px; font-size:.68rem; font-weight:700;
+}
+
+/* ============ イベントカレンダー ============ */
+
+.cal__head{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  margin-bottom:10px;
+}
+.cal__month{ margin:0; font-size:1.1rem; }
+
+.cal__grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+}
+.cal__dow{
+  text-align:center; font-size:.75rem; font-weight:700;
+  color:var(--muted); padding:4px 0;
+}
+.cal__dow.is-sun{ color:#c0483f; }
+.cal__dow.is-sat{ color:#3d6ea8; }
+
+.cal__cell{
+  aspect-ratio:1 / 1;
+  min-height:42px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  padding:2px;
+  border:1px solid var(--line); border-radius:9px;
+  background:var(--surface); color:inherit;
+  font:inherit; cursor:pointer;
+}
+.cal__cell--blank{ border-color:transparent; background:transparent; cursor:default; }
+.cal__cell.is-sun .cal__num{ color:#c0483f; }
+.cal__cell.is-sat .cal__num{ color:#3d6ea8; }
+.cal__cell.is-today{ border-color:var(--accent); border-width:2px; }
+.cal__cell.is-selected{ background:var(--accent); }
+.cal__cell.is-selected .cal__num{ color:#fff; }
+.cal__cell.has-event{ background:#fdf3e6; }
+.cal__cell.is-selected.has-event{ background:var(--accent); }
+
+.cal__num{ font-size:.95rem; font-weight:600; line-height:1; }
+.cal__dots{ display:flex; gap:2px; min-height:6px; }
+.cal__dot{
+  width:6px; height:6px; border-radius:50%;
+  background:var(--accent); display:inline-block;
+}
+.cal__cell.is-selected .cal__dot{ background:#fff; }
+.cal__dot--demo{ vertical-align:middle; }
+
+.cal__hint{
+  margin:12px 0 0; font-size:.78rem; color:var(--muted);
+}
+.cal__placeholder{
+  padding:20px 14px; text-align:center;
+  color:var(--muted); font-size:.88rem;
+  background:var(--surface);
+  border:1px dashed var(--line); border-radius:var(--radius);
+}
+
+.ev__date{ margin:4px 2px 10px; font-size:1rem; }
+.ev__head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ev__title{ margin:0; font-size:1.05rem; }
+.ev__desc{ margin:10px 0 0; font-size:.9rem; color:var(--muted); }
+
+/* ============ 下部の注記 ============ */
+
+.foot{
+  margin-top:18px; padding:0 4px;
+  font-size:.75rem; color:var(--muted);
+}
+.foot p{ margin:2px 0; }
+
+/* ============ 画面が広いとき（PC・タブレット） ============ */
+
+@media (min-width:900px){
+  body{ font-size:17px; }
+
+  .container{ max-width:1080px; }
+
+  /* トップページは、地図を左・一覧を右の2列にします */
+  #page-home .container{
+    display:grid;
+    grid-template-columns:1fr 380px;
+    grid-template-areas:
+      "picker  list"
+      "filters list"
+      "map     list"
+      "foot    list";
+    align-items:start;
+    column-gap:18px;
+  }
+  #page-home .picker{  grid-area:picker; }
+  #page-home .filters{ grid-area:filters; }
+  #page-home .card--flush{ grid-area:map; }
+  #page-home .listsec{ grid-area:list; position:sticky; top:70px; }
+  #page-home .foot{   grid-area:foot; }
+
+  #page-home .mapbox{ height:58vh; max-height:none; }
+
+  /* 一覧が長くなったらスクロールできるようにします */
+  #page-home .shoplist{
+    max-height:calc(100vh - 190px);
+    overflow-y:auto;
+    padding-right:4px;
+  }
+
+  .mapbox--detail{ height:44vh; }
+  .hero__img{ height:260px; }
+}
+
+/* 画面がとても広いときも間延びしないように */
+@media (min-width:1400px){
+  .container{ max-width:1200px; }
+}
