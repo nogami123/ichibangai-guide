@@ -73,6 +73,16 @@ function dateFromKey(key) {
   return new Date(y, m - 1, d);
 }
 
+// その日の 12:00（正午）の Date をつくります。
+// シークバーは「いつ開いても 12:00 から」という決まりなので、
+// アプリを開いたときに使います。
+// （日付を選び直したときは、そのとき選ばれている時刻をそのまま保つので使いません）
+function noonOf(d) {
+  const x = new Date(d);
+  x.setHours(12, 0, 0, 0);
+  return x;
+}
+
 // Date -> "2026年9月12日(土)"
 function formatDateLabel(d) {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日(${DAY_LABELS[d.getDay()]})`;
@@ -133,6 +143,20 @@ function getOpenState(shop, now) {
   return { open: false, nextLabel: null, todayRanges };
 }
 
+/* -------------------------------------------------------------
+ * 指定した日時に営業しているお店を返します。
+ *
+ * ★★ このアプリで「営業しているお店」を求めるときは、
+ *    かならずこの関数を使ってください。 ★★
+ *
+ *    トップページの一覧も、イベント詳細の「営業しているお店」も、
+ *    どちらもこの1つの関数を呼んでいます。
+ *    判定を2か所に書くと、片方だけ直したときに結果が食い違うためです。
+ * ----------------------------------------------------------- */
+function openShopsAt(when) {
+  return SHOPS.filter(shop => getOpenState(shop, when).open);
+}
+
 // 一覧やバッジに出す短い文言をつくります。
 function openStateLabel(st) {
   if (st.open) return `営業中 ・ ${prettyTime(st.until)} まで`;
@@ -187,4 +211,34 @@ function formatDistance(m) {
 function formatWalkTime(m) {
   const min = Math.max(1, Math.round(m / 80));
   return `徒歩 約${min}分`;
+}
+
+/* -------------------------------------------------------------
+ * 近い場所を選ぶ
+ *
+ * from（お店の座標）から近い順に並べて、上から count 件を返します。
+ * 返ってくる各件には distance（メートル）が足してあるので、
+ * 呼び出し側でもう一度距離を計算する必要はありません。
+ *
+ * uniqueByName を true にすると、同じ名前のものは
+ * いちばん近い1件だけにします。
+ * バス停は上り側・下り側で同じ名前が2つ登録されているため、
+ * これがないと「胡屋・胡屋・中の町」のように枠を無駄づかいします。
+ * ----------------------------------------------------------- */
+function nearestPlaces(from, places, count, uniqueByName = false) {
+  const sorted = places
+    .map(p => Object.assign({}, p, { distance: distanceMeters(from, p.latlng) }))
+    .sort((a, b) => a.distance - b.distance);
+
+  if (!uniqueByName) return sorted.slice(0, count);
+
+  const seen = new Set();
+  const result = [];
+  for (const p of sorted) {
+    if (seen.has(p.name)) continue;      // 同じ名前は最初の（＝いちばん近い）1件だけ
+    seen.add(p.name);
+    result.push(p);
+    if (result.length >= count) break;
+  }
+  return result;
 }

@@ -34,12 +34,26 @@ function makeShopIcon(shop, active = false) {
 
 // 駐車場・バス停のピン（お店と見分けがつくよう、小さい丸にしています）
 function makePlaceIcon(kind) {
-  const emoji = kind === 'parking' ? '🅿' : '🚏';
+  const emoji = kind === 'parking' ? '🅿' : '🚌';
   return L.divIcon({
     className: '',
     html: `<div class="dot dot--${kind}"><span>${emoji}</span></div>`,
     iconSize:   [26, 26],
     iconAnchor: [13, 13],
+  });
+}
+
+// イベント開催場所のピン
+function makeEventIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div class="pin">
+             <div class="pin__head" style="background:#c8452f">
+               <span class="pin__emoji">🎪</span>
+             </div>
+           </div>`,
+    iconSize:   [34, 44],
+    iconAnchor: [17, 44],
   });
 }
 
@@ -68,7 +82,7 @@ function buildPlaceLayer() {
 
   BUSSTOPS.forEach(b => {
     L.marker(b.latlng, { icon: makePlaceIcon('bus'), zIndexOffset: -100 })
-      .bindTooltip(`🚏 ${b.name}`, { direction: 'top' })
+      .bindTooltip(`🚌 ${b.name}`, { direction: 'top' })
       .addTo(layer);
   });
 

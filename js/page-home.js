@@ -44,15 +44,16 @@ function initHomePage() {
   dateInput.addEventListener('change', () => {
     const [y, m, d] = dateInput.value.split('-').map(Number);
     if (!y) return;                                   // 入力が空のときは何もしない
-    const next = new Date(state.now);
-    next.setFullYear(y, m - 1, d);
-    state.now = next;
+    // 日付だけを差し替えて、選ばれている時刻はそのまま保ちます。
+    // （まだシークバーを触っていなければ、初期値の 12:00 のままになります）
+    state.now = new Date(y, m - 1, d, state.now.getHours(), state.now.getMinutes(), 0, 0);
     state.followRealTime = false;                     // 手動で選んだので自動更新を止めます
     renderHome();
   });
 
   // input は「ドラッグ中も」発生するので、動かしながら一覧が変わります
   timeSlider.addEventListener('input', () => {
+    hideSwipeHint();                                  // 実際に操作されたら案内は消します
     const min  = Number(timeSlider.value);
     const next = new Date(state.now);
     next.setHours(Math.floor(min / 60), min % 60, 0, 0);
@@ -60,6 +61,9 @@ function initHomePage() {
     state.followRealTime = false;
     renderHome();
   });
+
+  // 触った時点（動かす前）でも案内を消します。キーボード操作にも対応します。
+  ['pointerdown', 'keydown'].forEach(ev => timeSlider.addEventListener(ev, hideSwipeHint));
 
   document.getElementById('btnNow').addEventListener('click', () => {
     state.now = new Date();
@@ -117,12 +121,12 @@ function renderFilters() {
  * 「いま選ばれている日時」で、営業中のお店を求めます
  * ----------------------------------------------------------- */
 function openShopsNow() {
-  return SHOPS
+  // 営業しているかの判定は共通関数にまとめてあります（js/utils.js の openShopsAt）。
+  // イベント詳細の「営業しているお店」も同じ関数を使っているので、結果が食い違いません。
+  return openShopsAt(state.now)
     .filter(shop => {
-      // ジャンルで絞る
-      if (state.genre !== 'all' && genreKeyOf(shop) !== state.genre) return false;
-      // 選んだ日時に営業しているか
-      return getOpenState(shop, state.now).open;
+      // そのうえで、画面で選ばれているジャンルに絞ります
+      return state.genre === 'all' || genreKeyOf(shop) === state.genre;
     })
     .sort((a, b) => {
       // 現在地が分かっていれば、近い順に並べます
@@ -220,6 +224,58 @@ function renderShopList(shops) {
     li.appendChild(btn);
     ul.appendChild(li);
   });
+}
+
+/* -------------------------------------------------------------
+ * 初回の操作案内（指のアニメーション）
+ *
+ * 「シークバーを左右に動かして、調べたい時間を探す」という使い方を、
+ * 説明文を読まなくても分かるように、指の絵で見せます。
+ *
+ * ★大事なところ★
+ *   ・これは「動きを見せているだけ」です。
+ *     シークバーの値も、選ばれている時刻も、一切変えません。
+ *   ・指の絵には CSS で pointer-events:none をかけてあるので、
+ *     案内が出ている間もシークバーは普通に触れます。
+ *   ・数秒たつか、ユーザーが実際に触った時点で消えます。
+ * ----------------------------------------------------------- */
+let swipeHintShown = false;        // 一度出したら、二度目は出しません
+
+function showSwipeHint() {
+  if (swipeHintShown) return;
+  swipeHintShown = true;
+
+  const hint = document.getElementById('swipeHint');
+  const veil = document.getElementById('swipeVeil');
+  const wrap = document.querySelector('.sliderwrap');
+  if (!hint || !veil || !wrap) return;
+
+  veil.hidden = false;
+  veil.classList.add('is-playing');                   // 画面を暗くする
+  wrap.classList.add('is-hinting');                   // シークバーだけ暗幕より前に出す
+  hint.hidden = false;
+  hint.classList.add('is-playing');                   // 指を動かす
+
+  // 自動で消えるまでの時間。
+  // アニメーション 2.6秒 × 2回 ＝ 約5.2秒 なので、少し余裕をみています。
+  setTimeout(hideSwipeHint, 5600);
+}
+
+function hideSwipeHint() {
+  const hint = document.getElementById('swipeHint');
+  const veil = document.getElementById('swipeVeil');
+  const wrap = document.querySelector('.sliderwrap');
+  if (!hint || hint.hidden) return;                   // すでに消えていれば何もしない
+
+  hint.classList.remove('is-playing');
+  hint.classList.add('is-hiding');                    // ふわっと消します
+  if (veil) { veil.classList.remove('is-playing'); veil.classList.add('is-hiding'); }
+
+  setTimeout(() => {
+    hint.hidden = true;
+    if (veil) veil.hidden = true;
+    if (wrap) wrap.classList.remove('is-hinting');    // シークバーを元の重なり順に戻す
+  }, 300);
 }
 
 /* -------------------------------------------------------------

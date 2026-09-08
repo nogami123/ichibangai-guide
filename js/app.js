@@ -7,9 +7,14 @@
  * アプリ全体で共有する「いまの状態」
  * ----------------------------------------------------------- */
 const state = {
-  now: new Date(),                 // いま表示している日時（ユーザーが選んだ日時）
-  followRealTime: true,            // true = 実際の時刻に追従する
-                                   // ユーザーが日時を動かしたら false になります
+  // アプリを開いたときは、現在時刻ではなく「今日の 12:00」から始めます。
+  // シークバーのつまみが、いつでも中央（12:00）にある状態です。
+  now: noonOf(new Date()),         // いま表示している日時（ユーザーが選んだ日時）
+
+  // true = 実際の時刻に追従する。
+  // 開いた直後は 12:00 で止めておきたいので false から始めます。
+  // 「今に戻す」ボタンを押したときだけ true になります。
+  followRealTime: false,
   genre: 'all',                    // 絞り込み中のジャンル
   userPos: null,                   // 現在地 [緯度, 経度]。取れなければ null のまま
 
@@ -38,8 +43,12 @@ function showPage(pageId) {
 
   // ★重要★ 隠れている間に作られた地図は大きさを 0 と覚えてしまうため、
   //         表示した直後にサイズを測り直します。
-  if (pageId === 'page-home') refreshMapSize(homeMap);
-  if (pageId === 'page-shop') refreshMapSize(shopMap);
+  if (pageId === 'page-home') {
+    refreshMapSize(homeMap);
+    showSwipeHint();               // 初回だけ、シークバーの操作案内を出します
+  }
+  if (pageId === 'page-shop')   refreshMapSize(shopMap);
+  if (pageId === 'page-events') refreshEventMaps();   // イベント開催場所の地図
 }
 
 function router() {
@@ -76,7 +85,9 @@ function goBack() {
  * 起動処理
  * ----------------------------------------------------------- */
 function init() {
-  document.title = `${AREA.name}ガイド`;
+  // タブに出る名前は index.html の <title> で決めています。
+  // ここで上書きしてしまうと、<title> を直しても変わらなくなるので、
+  // アプリ名は index.html の1箇所だけで管理します。
 
   initHomePage();
   initEventsPage();
@@ -88,8 +99,9 @@ function init() {
   router();                                   // 最初の1回
 
   /* 1分ごとに時刻を進めます。
-     ただし、ユーザーが日時を自分で選んだあとは何もしません。
-     （見ている日時が勝手に「今」へ戻ってしまうのを防ぐため）        */
+     動くのは「今に戻す」ボタンを押したあとだけです。
+     開いた直後や、ユーザーが日時を選んだあとは何もしません。
+     （見ている日時が勝手に動いてしまうのを防ぐため）              */
   setInterval(() => {
     if (!state.followRealTime) return;
     state.now = new Date();

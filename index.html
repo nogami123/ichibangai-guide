@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-<title>一番街ガイド｜沖縄市</title>
+<title>一番街なう｜沖縄市</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
@@ -18,7 +18,7 @@
 
   <header class="topbar">
     <div class="topbar__inner">
-      <h1 class="topbar__title">一番街ガイド</h1>
+      <h1 class="topbar__title">一番街なう</h1>
       <a class="btn btn--accent" href="#/events">📅 イベントカレンダー</a>
     </div>
   </header>
@@ -37,9 +37,25 @@
         <label class="picker__label" for="timeSlider">時刻</label>
         <output class="picker__time" id="timeOutput">--:--</output>
       </div>
-      <input class="picker__slider" type="range" id="timeSlider"
-             min="0" max="1425" step="15" value="720"
-             aria-label="時刻を選ぶ">
+      <div class="sliderwrap">
+        <!-- 案内中だけ画面全体を暗くする幕。
+             シークバーと指はこの幕より前に出るので、そこだけ明るく残ります。 -->
+        <div class="swipehint-veil" id="swipeVeil" aria-hidden="true" hidden></div>
+
+        <input class="picker__slider" type="range" id="timeSlider"
+               min="0" max="1425" step="15" value="720"
+               aria-label="時刻を選ぶ">
+
+        <!-- 初回だけ出る操作案内。指がシークバーを左右に動かして見せます。
+             CSS で pointer-events:none をかけてあるので、
+             この案内がシークバーの操作を邪魔することはありません。 -->
+        <div class="swipehint" id="swipeHint" aria-hidden="true" hidden>
+          <span class="swipehint__arrow swipehint__arrow--l">←</span>
+          <span class="swipehint__arrow swipehint__arrow--r">→</span>
+          <span class="swipehint__finger">☝️</span>
+        </div>
+      </div>
+
       <div class="picker__scale" aria-hidden="true">
         <span>0時</span><span>6時</span><span>12時</span><span>18時</span><span>24時</span>
       </div>

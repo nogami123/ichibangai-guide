@@ -160,6 +160,78 @@ a{ color:var(--sea); }
   display:flex; justify-content:space-between;
   font-size:.7rem; color:var(--muted);
 }
+
+/* ---- 初回の操作案内（指のアニメーション） ----
+   シークバーの上に重ねて表示します。
+   pointer-events:none が要（かなめ）で、これがあるおかげで
+   案内の絵が邪魔にならず、シークバーをそのまま操作できます。 */
+.sliderwrap{ position:relative; }
+
+/* --- 重なり順（後ろ → 前）---
+   1900 … 暗幕      画面全体を暗くする
+   2000 … シークバー 暗幕より前に出るので明るく見えます
+   2100 … 指・矢印   いちばん前
+   ※ ヘッダー(1200)や地図より大きい数字にして、画面全体を覆います。 */
+
+.swipehint-veil{
+  position:fixed; inset:0;      /* 画面いっぱい。スクロールしても付いてきます */
+  background:rgba(12,10,8,.72);
+  z-index:1900;
+  pointer-events:none;          /* 暗くするだけ。タップは下の要素に通ります */
+}
+.swipehint-veil.is-playing{ animation:swipehint-in .35s ease both; }
+.swipehint-veil.is-hiding{ opacity:0; transition:opacity .3s ease; }
+
+/* 案内中だけ、シークバーを暗幕より前に出します */
+.sliderwrap.is-hinting .picker__slider{ position:relative; z-index:2000; }
+
+.swipehint{
+  position:absolute; inset:0;
+  pointer-events:none;          /* ★案内はクリック・タッチを一切受け取りません */
+  z-index:2100;
+}
+.swipehint.is-playing{ animation:swipehint-in .35s ease both; }
+.swipehint.is-hiding{ opacity:0; transition:opacity .3s ease; }
+
+/* 左右の矢印は動かさず、うすく置いておくだけにします。
+   暗幕の上に出るので、白っぽい色にしています。 */
+.swipehint__arrow{
+  position:absolute; top:33px;
+  font-size:1.5rem; font-weight:900;
+  /* 矢印の記号は太字にしても細いままのことがあるため、
+     文字のふちを太らせて、はっきり見えるようにしています */
+  -webkit-text-stroke:1px currentColor;
+  color:#fff; opacity:.95;
+}
+.swipehint__arrow--l{ left:calc(50% - 110px); }
+.swipehint__arrow--r{ left:calc(50% + 92px); }
+
+.swipehint__finger{
+  position:absolute; top:26px; left:50%;
+  margin-left:-17px;            /* 文字の幅の半分。中央にそろえるための値です */
+  font-size:34px; line-height:1;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.45));
+}
+.swipehint.is-playing .swipehint__finger{
+  /* 2.6秒かけて「左へ・右へ」の1往復 → それを2回くり返します */
+  animation:swipehint-finger 2.6s ease-in-out 2;
+}
+
+@keyframes swipehint-in{
+  from{ opacity:0; }
+  to  { opacity:1; }
+}
+
+/* 中央でつまみを押す → 左へシュッ → 中央 → 右へシュッ → 中央 → 指を離す */
+@keyframes swipehint-finger{
+  0%   { transform:translateX(0)     scale(1);   }
+  10%  { transform:translateX(0)     scale(.85); }
+  30%  { transform:translateX(-64px) scale(.85); }
+  50%  { transform:translateX(0)     scale(.85); }
+  70%  { transform:translateX(64px)  scale(.85); }
+  90%  { transform:translateX(0)     scale(.85); }
+  100% { transform:translateX(0)     scale(1);   }
+}
 .picker__summary{
   margin:10px 0 0; padding-top:10px;
   border-top:1px dashed var(--line);
@@ -262,6 +334,7 @@ a{ color:var(--sea); }
   font:inherit; color:inherit; text-align:left; cursor:pointer;
 }
 .shopitem:active{ background:#faf7f2; }
+a.shopitem{ text-decoration:none; }   /* イベント欄ではリンクとして使っています */
 
 .shopitem__icon{
   flex:0 0 auto;
@@ -356,6 +429,76 @@ a{ color:var(--sea); }
 .hours .is-today td{ font-weight:700; }
 .hours .is-rest{ color:var(--closed); }
 
+/* ---- 折りたたみ（アクセス欄） ----
+   HTML標準の <details>/<summary> を使っているので、
+   開閉のJavaScriptは書いていません。 */
+.fold{ padding:0; }              /* 余白は見出しと中身がそれぞれ持ちます */
+
+.fold__head{
+  display:flex; align-items:center; gap:8px;
+  min-height:52px; padding:12px 14px;   /* 指で押しやすい高さ */
+  cursor:pointer;
+  font-size:.98rem; font-weight:700;
+  border-radius:var(--radius);
+  list-style:none;               /* 標準の三角マークを消します（Firefox） */
+}
+.fold__head::-webkit-details-marker{ display:none; }   /* 同上（Safari など） */
+.fold__head:active{ background:#faf7f2; }
+
+.fold__title{ flex:1 1 auto; }
+
+.fold__chev{
+  flex:0 0 auto;
+  font-size:1.15rem; color:var(--muted);
+  transition:transform .2s ease;
+}
+.fold[open] .fold__chev{ transform:rotate(180deg); }   /* ⌄ を回して ⌃ に見せます */
+
+.fold[open] .fold__head{
+  border-bottom:1px solid var(--line);
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.fold__body{ padding:2px 14px 14px; }
+
+/* ---- 周辺のアクセス（最寄りの駐車場・バス停） ---- */
+.access__head{
+  margin:16px 0 4px;
+  font-size:.85rem; font-weight:700; color:var(--muted);
+}
+.access__head:first-of-type{ margin-top:2px; }
+
+.access{ list-style:none; margin:0; padding:0; }
+.access__item{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 0; border-bottom:1px dotted var(--line);
+}
+.access__item:last-child{ border-bottom:none; }
+
+.access__icon{
+  flex:0 0 auto;
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+  background:var(--bg); border:1.5px solid var(--line);
+}
+.access__icon--parking{ border-color:#4a6f8a; }
+.access__icon--bus{ border-color:#6f8a4a; }
+
+.access__body{ flex:1 1 auto; min-width:0; display:block; }
+.access__name{ display:block; font-size:.95rem; font-weight:700; }
+.access__note{ display:block; font-size:.75rem; color:var(--muted); }
+.access__walk{
+  display:block; margin-top:1px;
+  font-size:.85rem; font-weight:600; color:var(--sea);
+}
+.access__walk .muted{ font-weight:normal; font-size:.75rem; }
+
+.access__empty{
+  margin:4px 0 0; padding:8px 0;
+  font-size:.85rem; color:var(--muted);
+}
+.access__foot{ margin:14px 0 0; font-size:.75rem; }
+
 .menu{ list-style:none; margin:0; padding:0; }
 .menu li{
   display:flex; justify-content:space-between; gap:10px;
@@ -426,6 +569,16 @@ a{ color:var(--sea); }
   background:var(--surface);
   border:1px dashed var(--line); border-radius:var(--radius);
 }
+
+/* イベント開催場所の地図 */
+.evmap{
+  height:180px; margin:10px 0 14px;
+  border-radius:10px; overflow:hidden;
+  background:#dfe4e6;              /* 読み込み中に真っ白にならないように */
+}
+
+/* 折りたたみの中に出す小さなお断り */
+.fold__note{ margin:0 0 10px; font-size:.78rem; }
 
 .ev__date{ margin:4px 2px 10px; font-size:1rem; }
 .ev__head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }

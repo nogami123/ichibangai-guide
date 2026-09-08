@@ -11,6 +11,15 @@ let shopMap = null;              // 詳細ページの地図（最初に開い�
 let shopMapMarker = null;        // そのお店のピン
 let shopMapUser = null;          // 現在地のピン
 
+/* この地図のズーム。
+   17 だと、スマホの画面におよそ 385m ぶんが映ります。
+   一番街のアーケード全体（約274m）と周りの通りが入るので、
+   「この店は一番街のこのあたり」が分かる大きさです。
+   最寄りの駐車場は必ず入りますが、少し離れたバス停は
+   画面の外になることがあります（引きすぎないことを優先しています）。
+   もっと寄せたいときは 18、引きたいときは 16 にします。 */
+const SHOP_MAP_ZOOM = 17;
+
 function renderShopPage(id) {
   const shop = SHOPS.find(s => s.id === id);
 
@@ -23,13 +32,23 @@ function renderShopPage(id) {
 
   document.getElementById('shopTitle').textContent = shop.name;
 
-  /* ---------- 地図 ---------- */
+  /* ---------- 最寄りの駐車場・バス停をさがす ----------
+     直線距離が近い順に、それぞれ最大3件まで。
+     バス停は上り・下りで同じ名前が2つあるので、同名は近いほうだけにします。
+     ※これは下の「アクセス」欄の文字表示に使うだけで、地図には出しません。 */
+  const nearParkings = nearestPlaces(shop.latlng, PARKINGS, 3, true);
+  const nearBusStops = nearestPlaces(shop.latlng, BUSSTOPS, 3, true);
+
+  /* ---------- 地図 ----------
+     お店・駐車場・バス停のピンを出しますが、
+     地図の中心はあくまで「選択したお店」です。
+     ピンを全部画面に収めるための引き（fitBounds）はしません。 */
   if (!shopMap) {
     shopMap = L.map('shopMap', { zoomControl: true });
     addBaseTiles(shopMap);
     buildPlaceLayer().addTo(shopMap);          // 周辺の駐車場・バス停
   }
-  shopMap.setView(shop.latlng, 18);
+  shopMap.setView(shop.latlng, SHOP_MAP_ZOOM);
 
   if (shopMapMarker) shopMap.removeLayer(shopMapMarker);
   shopMapMarker = L.marker(shop.latlng, { icon: makeShopIcon(shop, true), zIndexOffset: 400 })
@@ -75,6 +94,49 @@ function renderShopPage(id) {
         </span>
       </div>`;
   }
+
+  /* ---------- 周辺のアクセス（最寄りの駐車場・バス停） ----------
+     徒歩時間は「直線距離 ÷ 分速80m」のおおよその目安です。
+     道なりの正確なルート計算はしていません。 */
+  const accessItem = (icon, kind, place) => `
+    <li class="access__item">
+      <span class="access__icon access__icon--${kind}" aria-hidden="true">${icon}</span>
+      <span class="access__body">
+        <span class="access__name">${escapeHtml(place.name)}</span>
+        ${place.note ? `<small class="access__note">${escapeHtml(place.note)}</small>` : ''}
+        <span class="access__walk">
+          お店から ${escapeHtml(formatWalkTime(place.distance))}
+          <small class="muted">（${escapeHtml(formatDistance(place.distance))}）</small>
+        </span>
+      </span>
+    </li>`;
+
+  const accessList = (icon, kind, places, emptyMsg) => places.length
+    ? `<ul class="access">${places.map(p => accessItem(icon, kind, p)).join('')}</ul>`
+    : `<p class="access__empty">${escapeHtml(emptyMsg)}</p>`;
+
+  /* 折りたたみは HTML 標準の <details> / <summary> を使っています。
+     JavaScript を書かなくても、見出しをタップするだけで開閉できます。
+     open を付けていないので、最初は閉じた状態です。 */
+  const accessHtml = `
+    <details class="card fold">
+      <summary class="fold__head">
+        <span class="fold__title">アクセス</span>
+        <span class="fold__chev" aria-hidden="true">⌄</span>
+      </summary>
+
+      <div class="fold__body">
+        <h4 class="access__head">🅿 車で来る場合（駐車場）</h4>
+        ${accessList('🅿', 'parking', nearParkings, '近くの駐車場のデータがまだありません。')}
+
+        <h4 class="access__head">🚌 バスで来る場合（バス停）</h4>
+        ${accessList('🚌', 'bus', nearBusStops, '近くのバス停のデータがまだありません。')}
+
+        <p class="access__foot muted">
+          ※徒歩時間・距離は直線距離をもとにしたおおよその目安です。実際の道のりとは異なります。
+        </p>
+      </div>
+    </details>`;
 
   /* ---------- SNS（あるものだけボタンにします） ---------- */
   const SNS_LABELS = {
@@ -176,6 +238,8 @@ function renderShopPage(id) {
 
     ${menuHtml ? `<div class="card">${menuHtml}</div>` : ''}
     ${snsHtml  ? `<div class="card">${snsHtml}</div>`  : ''}
+
+    ${accessHtml}
 
     <footer class="foot">
       <p>※このお店の情報は開発用のサンプル（ダミー）です。</p>
