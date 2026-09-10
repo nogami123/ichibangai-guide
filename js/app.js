@@ -13,7 +13,7 @@ const state = {
 
   // true = 実際の時刻に追従する。
   // 開いた直後は 12:00 で止めておきたいので false から始めます。
-  // 「今に戻す」ボタンを押したときだけ true になります。
+  // 「現在時刻」ボタンを押したときだけ true になります。
   followRealTime: false,
   genre: 'all',                    // 絞り込み中のジャンル
   userPos: null,                   // 現在地 [緯度, 経度]。取れなければ null のまま
@@ -63,8 +63,36 @@ function router() {
   }
 
   if (hash.startsWith('#/events')) {
+    /* #/events            … ふつうにカレンダーを開く
+       #/events/2026-09-18 … その日を選んだ状態でカレンダーを開く
+                             （お店詳細のイベントバナーから来たとき） */
+    const datePart = hash.slice('#/events'.length).replace(/^\//, '');
+    const jumped   = /^\d{4}-\d{2}-\d{2}$/.test(datePart);
+
+    if (jumped) {
+      state.selectedDateKey = datePart;
+      const d = dateFromKey(datePart);
+      state.calYear  = d.getFullYear();      // カレンダーの月も合わせます
+      state.calMonth = d.getMonth();
+    }
+
     renderEventsPage();
     showPage('page-events');
+
+    // 日付を指定して来たときは、イベント詳細のところまで送ります。
+    // showPage が画面を一番上に戻すので、そのあとで動かします。
+    if (jumped) {
+      setTimeout(() => {
+        const box = document.getElementById('eventDetail');
+        if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
+    return;
+  }
+
+  if (hash.startsWith('#/daytime')) {
+    renderDaytimePage();
+    showPage('page-daytime');
     return;
   }
 
@@ -94,12 +122,13 @@ function init() {
 
   document.getElementById('btnBackFromShop').addEventListener('click', goBack);
   document.getElementById('btnBackFromEvents').addEventListener('click', goBack);
+  document.getElementById('btnBackFromDaytime').addEventListener('click', goBack);
 
   window.addEventListener('hashchange', router);
   router();                                   // 最初の1回
 
   /* 1分ごとに時刻を進めます。
-     動くのは「今に戻す」ボタンを押したあとだけです。
+     動くのは「現在時刻」ボタンを押したあとだけです。
      開いた直後や、ユーザーが日時を選んだあとは何もしません。
      （見ている日時が勝手に動いてしまうのを防ぐため）              */
   setInterval(() => {

@@ -74,11 +74,22 @@ a{ color:var(--sea); }
   display:flex; align-items:center; gap:10px;
 }
 .topbar__title{
-  margin:0; font-size:1.15rem; letter-spacing:.03em;
+  margin:0; font-size:1.08rem; letter-spacing:.01em;
   flex:1 1 auto; min-width:0;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .topbar__title--sub{ font-size:1rem; font-weight:600; }
+
+/* イベントカレンダーのボタンは、広い画面では長い文字、
+   狭い画面では短い文字にして、アプリ名が切れないようにします。 */
+.btn__short{ display:none; }
+@media (max-width:420px){
+  .btn__long{  display:none; }
+  /* !important は、HTML側に書いた保険の display:none を
+     打ち消すために必要です（保険については index.html を見てください）。 */
+  .btn__short{ display:inline !important; }
+  .topbar__title{ font-size:1rem; }
+}
 
 /* ============ ボタン ============ */
 
@@ -103,6 +114,153 @@ a{ color:var(--sea); }
 
 .btnrow{ display:flex; flex-wrap:wrap; gap:8px; }
 .btnrow--mt{ margin-top:12px; }
+
+/* ============ 昼の一番街アピール ============
+   トップページの一番上。夜のイメージが強い一番街に
+   「昼も楽しめる」ことを伝えるための入口です。
+   背景を朝〜昼の暖かい色にして、下のカードと区別しています。 */
+
+.noon{
+  background:linear-gradient(180deg,#fff5e6 0%,#fdeedd 100%);
+  border:1px solid #f0dcc2;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:8px 0;
+  margin-bottom:12px;
+  box-sizing:border-box;
+  height:120px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.noon__label{
+  flex:0 0 18px;
+  height:18px;
+  margin:0 14px 4px;
+  font-size:.76rem; font-weight:700; letter-spacing:.04em;
+  line-height:18px;
+  color:var(--accent);
+}
+
+/* --- 横スワイプのカルーセル ---
+   ライブラリは使わず、CSS の scroll-snap だけで動かしています。
+   指で横になぞると、1枚ずつピタッと止まります。 */
+.ncarousel{
+  display:flex; gap:10px;
+  padding:0 14px;
+  height:76px;
+  overflow-x:auto; overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;          /* スクロールバーは隠します */
+}
+.ncarousel::-webkit-scrollbar{ display:none; }
+
+.nslide{
+  flex:0 0 86%;                  /* 隣のバナーが少しだけ見える幅 */
+  scroll-snap-align:start;
+  display:flex; align-items:stretch;
+  height:76px;                   /* 店舗情報が切れないよう、カード内に十分な高さを確保 */
+  background:var(--surface);
+  border:1px solid var(--line); border-radius:12px;
+  box-shadow:0 2px 8px rgba(43,38,33,.10);
+  overflow:hidden;
+  text-decoration:none; color:inherit;
+}
+.nslide:active{ background:#faf7f2; }
+
+.nslide__vis{
+  position:relative; flex:0 0 auto;
+  width:88px; background:#f3e2d6;
+  display:flex; align-items:center; justify-content:center;
+}
+.nslide__ph{ font-size:26px; opacity:.6; }
+.nslide__img{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  /* ちらしは縦長なので、上のほう（イベント名が書いてある側）を
+     残して下を切ります。 */
+  object-fit:cover; object-position:center top;
+  display:block;
+}
+
+.nslide__body{
+  flex:1 1 auto; min-width:0;
+  display:flex; flex-direction:column; justify-content:center; gap:1px;
+  padding:6px 12px;
+}
+.nslide__kicker{ font-size:.7rem; font-weight:700; color:var(--accent); }
+.nslide__title{
+  font-size:.98rem; font-weight:700; line-height:1.3;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.nslide__sub{
+  font-size:.76rem; color:var(--muted); line-height:1.35;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* 2行まで折り返す補足（「昼の一番街」への案内カードで使います） */
+.nslide__sub--wrap{
+  white-space:normal;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.nslide__arrow{
+  flex:0 0 auto; align-self:center;
+  padding-right:10px;
+  color:var(--muted); font-size:1.3rem;
+}
+
+/* 月イチ番街のカードは、ポスターが主役なので少し大きくします。
+   画像の枠（96×136px）は、ポスターの縦横比とほぼ同じにしてあるので、
+   上下がほとんど切れずに全体が見えます。 */
+.nslide--tall{ height:152px; }
+.nslide--tall .nslide__vis{ width:108px; }
+.nslide--tall .nslide__img{ object-position:center; }
+.nslide__title--wrap{ white-space:normal; line-height:1.3; }
+
+/* 月イチ番街の短い説明。長い文は2行までにして、続きは詳細ページで読みます */
+.nslide__desc{
+  margin-top:3px;
+  font-size:.72rem; color:var(--muted); line-height:1.4;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* 画像が無いときに出る「9月」のカード */
+.nslide__vis--month{
+  background:linear-gradient(160deg,#f6c98a 0%,#e08f5a 100%);
+  color:#fff;
+}
+.nslide__month{
+  font-size:30px; font-weight:700; line-height:1;
+  text-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.nslide__month small{ font-size:14px; margin-left:1px; }
+
+/* 「昼の一番街ページへ」の1枚 */
+.nslide--more{ background:#fffaf2; }
+.nslide__vis--more{
+  background:linear-gradient(160deg,#ffd89b 0%,#f0a860 100%);
+  color:#fff;
+}
+.nslide__vis--more .nslide__ph{ opacity:1; font-size:30px; }
+
+/* いま何枚目かを示す点 */
+.ndots{ display:flex; justify-content:center; align-items:center; gap:5px; height:6px; margin-top:3px; flex:0 0 6px; }
+.ndot{
+  width:6px; height:6px; border-radius:999px;
+  background:#dfcdb4;
+  transition:width .2s ease, background .2s ease;
+}
+.ndot.is-on{ width:16px; background:var(--accent); }
+
+
+/* トップの昼バナー：店舗カード下に少しだけオレンジの余白を確保します。
+   カード自体の大きさや文字は変えず、下端が外枠と一体化して見えないようにします。 */
+#page-home .noon{ padding:6px 0; }
+#page-home .ncarousel{ height:76px; }
+#page-home .ndots{ margin-top:4px; }
 
 /* ============ 日付・時刻の選択 ============ */
 
@@ -129,6 +287,31 @@ a{ color:var(--sea); }
   font-variant-numeric:tabular-nums;
   color:var(--accent);
 }
+
+/* --- シークバー上の「昼の魅力」アクセント ---
+   バーのすぐ上に置いた、小さな目印です。
+   指のスワイプ案内はバーの「下」にあるので、重なりません。
+   pointer-events:none が要で、これがあるおかげで
+   目印がシークバーの操作を一切邪魔しません。 */
+.accents{
+  position:relative; height:38px;
+  pointer-events:none;
+}
+.accent{
+  position:absolute; bottom:0;
+  transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center;
+  line-height:1; white-space:nowrap;
+  color:var(--accent); opacity:.7;    /* 指の案内より控えめにします */
+}
+/* 「オススメ」は、ぬりつぶさず線だけの小さな札にして目立たせすぎないようにします */
+.accent__rec{
+  font-size:.56rem; font-weight:700;
+  padding:2px 5px; margin-bottom:3px;
+  border:1px solid currentColor; border-radius:999px;
+}
+.accent__time{ font-size:.62rem; font-weight:700; }
+.accent__mark{ font-size:.68rem; margin-top:2px; }
 
 /* 時刻のシークバー（指でも動かしやすいよう大きめにしています） */
 .picker__slider{
@@ -348,6 +531,11 @@ a.shopitem{ text-decoration:none; }   /* イベント欄ではリンクとして
   display:block; font-size:1.02rem; font-weight:700;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
+.shopitem__hours{
+  display:block; margin-top:2px;
+  font-size:.86rem; font-weight:600; color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
 .shopitem__tags{ display:flex; flex-wrap:wrap; gap:5px; margin:4px 0 5px; }
 .shopitem__status{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:.82rem; }
 .shopitem__until{ color:var(--muted); }
@@ -378,6 +566,54 @@ a.shopitem{ text-decoration:none; }   /* イベント欄ではリンクとして
 }
 
 /* ============ お店詳細ページ ============ */
+
+/* ---- 開催イベントのバナー（お店詳細ページの上のほう） ---- */
+.evbanner{
+  display:flex; align-items:stretch; gap:0;
+  margin-bottom:14px;
+  background:var(--surface);
+  border:1px solid var(--line); border-left:4px solid var(--accent);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  text-decoration:none; color:inherit;
+}
+.evbanner:active{ background:#faf7f2; }
+
+.evbanner__imgwrap{
+  position:relative; flex:0 0 auto;
+  width:92px; min-height:104px;
+  background:#f3e2d6;              /* 画像が無いときの下地 */
+  display:flex; align-items:center; justify-content:center;
+}
+.evbanner__ph{ font-size:30px; opacity:.55; }
+.evbanner__img{
+  position:absolute; inset:0;
+  width:100%; height:100%; object-fit:cover;
+  display:block;
+}
+
+.evbanner__body{
+  flex:1 1 auto; min-width:0;
+  display:flex; flex-direction:column; justify-content:center; gap:3px;
+  padding:10px 12px;
+}
+.evbanner__label{
+  align-self:flex-start;
+  padding:1px 8px; border-radius:999px;
+  background:var(--accent); color:#fff;
+  font-size:.68rem; font-weight:700;
+}
+.evbanner__title{
+  font-size:1rem; font-weight:700; line-height:1.35;
+}
+.evbanner__date{ font-size:.82rem; color:var(--muted); }
+
+.evbanner__arrow{
+  flex:0 0 auto; align-self:center;
+  padding-right:10px;
+  color:var(--muted); font-size:1.5rem;
+}
 
 .hero{ margin-bottom:14px; }
 .hero__img{
@@ -570,6 +806,15 @@ a.shopitem{ text-decoration:none; }   /* イベント欄ではリンクとして
   border:1px dashed var(--line); border-radius:var(--radius);
 }
 
+/* イベントのちらし画像（切れないように全体を収めます） */
+.ev__img{
+  display:block; width:100%;
+  max-height:340px; object-fit:contain;
+  margin:10px 0 4px;
+  background:var(--bg);
+  border:1px solid var(--line); border-radius:10px;
+}
+
 /* イベント開催場所の地図 */
 .evmap{
   height:180px; margin:10px 0 14px;
@@ -584,6 +829,122 @@ a.shopitem{ text-decoration:none; }   /* イベント欄ではリンクとして
 .ev__head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .ev__title{ margin:0; font-size:1.05rem; }
 .ev__desc{ margin:10px 0 0; font-size:.9rem; color:var(--muted); }
+
+/* ============ 昼の一番街ページへの導線（トップ最下部） ============ */
+
+.cta{
+  display:block; margin:18px 0 4px; padding:18px 16px;
+  background:linear-gradient(160deg,#2b2621 0%,#3a3129 100%);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  text-decoration:none; color:#fff;
+  text-align:center;
+}
+.cta:active{ opacity:.85; }
+.cta__q{
+  display:block; font-size:1.05rem; font-weight:700; line-height:1.5;
+}
+.cta__a{
+  display:block; margin-top:6px;
+  font-size:.85rem; color:#e6d9c6;
+}
+.cta__btn{
+  display:inline-block; margin-top:14px;
+  padding:10px 20px; min-height:44px; line-height:24px;
+  background:#fff; color:var(--accent);
+  border-radius:999px;
+  font-size:.9rem; font-weight:700;
+}
+
+/* ============ 「昼の一番街」ページ ============ */
+
+.dayhero{
+  margin:4px 0 18px; padding:20px 16px;
+  background:linear-gradient(160deg,#fff5e6 0%,#fce6cd 100%);
+  border:1px solid #f0dcc2;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.dayhero__lead{
+  margin:0; font-size:.8rem; font-weight:700; letter-spacing:.04em;
+  color:var(--accent);
+}
+.dayhero__title{
+  margin:6px 0 8px; font-size:1.5rem; line-height:1.35;
+}
+.dayhero__sub{ margin:0; font-size:.86rem; color:#7a6a55; }
+
+.daysec{ margin-bottom:24px; }
+.daysec--flush{ margin-left:-14px; margin-right:-14px; }   /* カルーセルは画面端まで */
+.daysec--flush .daysec__title,
+.daysec--flush .daysec__note{ padding-left:14px; padding-right:14px; }
+
+.daysec__title{
+  margin:0 0 2px; font-size:1.08rem;
+  padding-bottom:6px; border-bottom:2px solid var(--line);
+}
+.daysec--flush .daysec__title{ border-bottom:none; padding-bottom:0; }
+/* 月イチ番街の縦長カードがスマホでも切れないようにします。
+   トップページの昼バナー（76px）には影響させず、
+   「昼の一番街」ページの月イチ番街だけ152pxを確保します。 */
+#page-daytime .ncarousel{ height:152px; }
+.daysec__note{ margin:4px 0 10px; font-size:.8rem; color:var(--muted); }
+
+/* --- お店の紹介カード --- */
+.dayshops{ list-style:none; margin:0; padding:0; }
+.dayshops li{ margin-bottom:10px; }
+
+.dayshop{
+  display:flex; align-items:stretch; gap:0;
+  background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  text-decoration:none; color:inherit;
+}
+.dayshop:active{ background:#faf7f2; }
+
+.dayshop__vis{
+  position:relative; flex:0 0 auto;
+  width:84px;
+  display:flex; align-items:center; justify-content:center;
+}
+.dayshop__ph{ font-size:30px; }
+.dayshop__img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block;
+}
+
+.dayshop__body{
+  flex:1 1 auto; min-width:0;
+  padding:11px 13px;
+}
+.dayshop__tags{
+  display:flex; align-items:center; flex-wrap:wrap; gap:7px;
+  margin-bottom:4px;
+}
+.dayshop__hours{ font-size:.74rem; color:var(--muted); }
+.dayshop__name{
+  display:block; font-size:1.02rem; font-weight:700; line-height:1.35;
+}
+.dayshop__note{
+  display:block; margin-top:4px;
+  font-size:.82rem; color:var(--muted); line-height:1.55;
+}
+
+/* --- 昼の過ごし方 --- */
+.dayways{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(2,1fr); gap:8px;
+}
+.dayway{
+  display:flex; align-items:center; gap:8px;
+  padding:11px 12px;
+  background:var(--surface);
+  border:1px solid var(--line); border-radius:12px;
+  font-size:.85rem; font-weight:600;
+}
+.dayway span{ font-size:18px; }
 
 /* ============ 下部の注記 ============ */
 
@@ -600,30 +961,47 @@ a.shopitem{ text-decoration:none; }   /* イベント欄ではリンクとして
 
   .container{ max-width:1080px; }
 
-  /* トップページは、地図を左・一覧を右の2列にします */
+  /* PCでは左右2列。ただし sticky や viewport依存の高さは使わず、
+     通常のページレイアウトとして固定することでマウス操作を安定させます。 */
   #page-home .container{
     display:grid;
-    grid-template-columns:1fr 380px;
+    grid-template-columns:minmax(0, 1fr) 360px;
     grid-template-areas:
       "picker  list"
+      "noon    list"
       "filters list"
       "map     list"
-      "foot    list";
+      "cta     cta"
+      "foot    foot";
     align-items:start;
     column-gap:18px;
   }
+  #page-home .cta{     grid-area:cta; }
+  #page-home .noon{    grid-area:noon; }
+  #page-home .noon{ height:120px; padding:6px 0; }
+  #page-home .ncarousel{ height:76px; }
+  #page-home .nslide{ height:76px; }
   #page-home .picker{  grid-area:picker; }
   #page-home .filters{ grid-area:filters; }
-  #page-home .card--flush{ grid-area:map; }
-  #page-home .listsec{ grid-area:list; position:sticky; top:70px; }
+  #page-home .card--flush{ grid-area:map; min-width:0; }
+  #page-home .listsec{ grid-area:list; min-width:0; }
   #page-home .foot{   grid-area:foot; }
 
-  #page-home .mapbox{ height:58vh; max-height:none; }
+  /* 地図の高さを画面の高さに依存させず、PCで表示がぶれないようにします。 */
+  #page-home .mapbox{ height:500px; min-height:500px; max-height:500px; }
 
-  /* 一覧が長くなったらスクロールできるようにします */
+  /* 画面が広いときは、バナーの幅を固定して何枚か並べます */
+  .nslide{ flex:0 0 320px; }
+
+  /* 昼の一番街ページも、広い画面では2列にします */
+  .dayshops{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .dayshops li{ margin-bottom:0; }
+  .dayways{ grid-template-columns:repeat(3,1fr); }
+
+  /* 店舗一覧はページ全体と一緒に通常スクロールします。 */
   #page-home .shoplist{
-    max-height:calc(100vh - 190px);
-    overflow-y:auto;
+    max-height:none;
+    overflow:visible;
     padding-right:4px;
   }
 

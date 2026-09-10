@@ -20,8 +20,21 @@
  *   [['20:00', '27:00']]  … 20時〜翌朝3時（27:00 = 翌3:00）
  *
  * ● 書かなくてよい項目
- *   priceRange / seats / photos / sns / menu は「無ければ書かない」で
- *   構いません。書かなかった項目は、画面にも表示されません。
+ *   priceRange / seats / photos / sns / menu / eventIds は
+ *   「無ければ書かない」で構いません。
+ *   書かなかった項目は、画面にも表示されません。
+ *
+ * ● daytimeNote（「昼の一番街」ページに載せたいとき）
+ *   このお店の「昼に行くと何が発見できるか」を1〜2文で書きます。
+ *   ★これを書いたお店だけが「昼の一番街」ページに載ります。
+ *     載せたくないお店には書かないでください。
+ *   （念のため、昼12時に営業していないお店は自動で除かれます）
+ *
+ * ● eventIds（そのお店で開催されるイベント）
+ *   eventIds: ['ev-007']            … イベント1件
+ *   eventIds: ['ev-007', 'ev-010']  … イベント2件
+ *   ここに書いた id のイベントが、お店詳細ページの上のほうに
+ *   バナーとして出ます。id は data/events.js のものを使います。
  */
 
 /* -------------------------------------------------------------
@@ -67,6 +80,7 @@ const CATEGORIES = {
   clothes:  { label: '古着・衣料', genre: 'goods', icon: '👕' },
   barber:   { label: '理容・美容', genre: 'other', icon: '💈' },
   pharmacy: { label: '薬局',       genre: 'other', icon: '💊' },
+  cinema:   { label: '映画館',     genre: 'other', icon: '🎬' },
 };
 
 /* -------------------------------------------------------------
@@ -180,6 +194,8 @@ const SHOPS = [
       sat: [['12:00', '20:00']],
     },
     priceRange: '¥¥',
+    daytimeNote: '棚を一枚ずつめくる時間が、いちばんの楽しみ。'
+               + '昼の店先からは、沖縄ロックのレコードの音が聞こえてきます。',
     sns: {
       website: 'https://example.com/',
       instagram: 'https://www.instagram.com/',
@@ -205,6 +221,8 @@ const SHOPS = [
     },
     priceRange: '¥',
     seats: 18,
+    daytimeNote: '昭和のままの店内に、昼の光が差し込みます。'
+               + 'ぜんざいとコーヒーで、時間をゆっくり使う場所。',
     menu: [
       { name: 'ブレンドコーヒー', price: 450, popular: true },
       { name: 'ぜんざい', price: 500, popular: true },
@@ -232,6 +250,8 @@ const SHOPS = [
     },
     priceRange: '¥',
     seats: 34,
+    daytimeNote: 'お昼の定食はボリュームたっぷり。'
+               + '地元の人にまじって食べる、ふだんどおりの一番街があります。',
     menu: [
       { name: 'ちゃんぽん', price: 800, popular: true },
       { name: 'ポーク玉子定食', price: 750 },
@@ -258,6 +278,8 @@ const SHOPS = [
       sat: [['10:00', '19:00']],
     },
     priceRange: '¥',
+    daytimeNote: 'その場で島ぞうりに彫刻してもらえます。'
+               + '自分だけの一足ができるまで、雑貨をゆっくり見て回れます。',
     sns: {
       instagram: 'https://www.instagram.com/',
     },
@@ -355,5 +377,72 @@ const SHOPS = [
       sat: [['09:00', '13:00']],        // 土曜は午前のみ
     },
     priceRange: '¥',
+  },
+
+  {
+    id: 'shop-12',
+    name: 'コザ灯り酒場',
+    category: 'izakaya',
+    latlng: [26.33722, 127.79992],
+    address: '沖縄県沖縄市中央1-3-7',
+    tel: '098-000-0012',
+    description: '夜はもちろん、金曜と週末はお昼から開いている酒場。'
+               + '明るいうちからのんびり一杯やれます。',
+    hours: {
+      sun: [['11:00', '22:00']],
+      mon: [['17:00', '23:00']],
+      tue: null,                        // 火曜定休
+      wed: [['17:00', '23:00']],
+      thu: [['17:00', '23:00']],
+      fri: [['11:00', '23:00']],        // 金曜は昼11時から通しで営業
+      sat: [['11:00', '23:00']],
+    },
+    priceRange: '¥¥',
+    seats: 30,
+    daytimeNote: '金曜と週末は、お昼から開いています。'
+               + '明るいうちに一杯やるという、昼の一番街ならではの過ごし方。',
+    menu: [
+      { name: '昼飲みセット（ドリンク＋小皿2品）', price: 980, popular: true, note: '15時まで' },
+      { name: '限定ランチ（日替わり）', price: 850, popular: true, note: '15時まで' },
+      { name: 'オリオン生ビール', price: 480 },
+      { name: '島らっきょうの天ぷら', price: 580 },
+      { name: '沖縄おでん', price: 680 },
+      { name: 'ラフテー丼', price: 900 },
+    ],
+    sns: {
+      instagram: 'https://www.instagram.com/',
+    },
+
+    // ▼ このお店で開催されるイベント（data/events.js の id を書きます）
+    //    複数ある場合は ['ev-007', 'ev-010'] のように並べて書けます。
+    //    この項目が無いお店には、詳細ページにイベントバナーが出ません。
+    eventIds: ['ev-007'],
+  },
+
+  {
+    id: 'shop-13',
+    name: 'シアター一番街',
+    category: 'cinema',
+    latlng: [26.33829, 127.80107],
+    address: '沖縄県沖縄市中央1-9-5',
+    tel: '098-000-0013',
+    description: 'アーケードの中にある、客席48席の小さな映画館。'
+               + '沖縄の作品や、少し前の名作をかけています。',
+    hours: {
+      sun: [['11:00', '20:00']],
+      mon: [['11:00', '21:00']],
+      tue: null,                        // 火曜定休
+      wed: [['11:00', '21:00']],
+      thu: [['11:00', '21:00']],
+      fri: [['11:00', '21:00']],
+      sat: [['11:00', '21:00']],
+    },
+    priceRange: '¥¥',
+    seats: 48,
+    daytimeNote: 'アーケードの中に映画館があることを、'
+               + '知らない人も多いかもしれません。昼の回なら、観たあとに街を歩けます。',
+    sns: {
+      instagram: 'https://www.instagram.com/',
+    },
   },
 ];

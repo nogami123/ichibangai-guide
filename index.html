@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-<title>一番街なう｜沖縄市</title>
+<title>沖縄市・一番街なう</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
@@ -18,8 +18,16 @@
 
   <header class="topbar">
     <div class="topbar__inner">
-      <h1 class="topbar__title">一番街なう</h1>
-      <a class="btn btn--accent" href="#/events">📅 イベントカレンダー</a>
+      <h1 class="topbar__title">沖縄市・一番街なう</h1>
+      <!-- 画面が狭いときは、アプリ名が切れないようボタンの文字を短くします
+           （アプリ名のほうは省略しません） -->
+      <a class="btn btn--accent" href="#/events">
+        <span aria-hidden="true">📅</span>
+        <span class="btn__long">イベントカレンダー</span>
+        <!-- style="display:none" は保険です。style.css が古いまま読み込まれても
+             「イベントカレンダーイベント」と二重に出ないようにしています。 -->
+        <span class="btn__short" style="display:none">イベント</span>
+      </a>
     </div>
   </header>
 
@@ -30,13 +38,19 @@
       <div class="picker__row">
         <label class="picker__label" for="dateInput">日付</label>
         <input class="picker__date" type="date" id="dateInput">
-        <button class="btn btn--ghost" type="button" id="btnNow">今に戻す</button>
+        <button class="btn btn--ghost" type="button" id="btnNow">現在時刻</button>
       </div>
 
       <div class="picker__row picker__row--time">
         <label class="picker__label" for="timeSlider">時刻</label>
         <output class="picker__time" id="timeOutput">--:--</output>
       </div>
+
+      <!-- ---- 昼の魅力を示す目印（中身は js/page-home.js が作ります） ----
+           シークバーの「上」に置いています。指の案内はバーの「下」なので、
+           ふたつが重なることはありません。 -->
+      <div class="accents" id="timeAccents" aria-hidden="true" hidden></div>
+
       <div class="sliderwrap">
         <!-- 案内中だけ画面全体を暗くする幕。
              シークバーと指はこの幕より前に出るので、そこだけ明るく残ります。 -->
@@ -62,6 +76,9 @@
 
       <p class="picker__summary" id="pickerSummary"></p>
     </section>
+
+    <!-- ---- 昼の一番街アピール（中身は js/page-home.js が作ります） ---- -->
+    <section class="noon" id="noonPromo"></section>
 
     <!-- ---- ジャンル絞り込み ---- -->
     <div class="filters" id="filters" role="group" aria-label="ジャンルで絞り込み"></div>
@@ -91,9 +108,73 @@
       </p>
     </section>
 
+    <!-- ---- 最下部：昼の一番街ページへの導線 ---- -->
+    <a class="cta" href="#/daytime">
+      <span class="cta__q">あなたは、昼の一番街を知っていますか？</span>
+      <span class="cta__a">夜には見えていない一番街が、昼にはあります。</span>
+      <span class="cta__btn">昼の一番街をのぞいてみる →</span>
+    </a>
+
     <footer class="foot">
       <p>※お店の情報はすべて開発用のサンプル（ダミー）です。</p>
       <p>※距離は地図上の直線距離のめやすです。実際の道のりとは異なります。</p>
+    </footer>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     ページ4：昼の一番街
+     ============================================================ -->
+<section class="page" id="page-daytime" hidden>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <button class="btn btn--ghost" type="button" id="btnBackFromDaytime">← 戻る</button>
+      <h1 class="topbar__title topbar__title--sub">昼の一番街</h1>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ---- 導入 ---- -->
+    <section class="dayhero">
+      <p class="dayhero__lead">夜だけじゃない、一番街。</p>
+      <h2 class="dayhero__title">昼だから見える、<br>一番街の顔。</h2>
+      <p class="dayhero__sub">夜には見えていない一番街が、昼にはあります。</p>
+    </section>
+
+    <!-- ---- 月イチ番街 ---- -->
+    <section class="daysec daysec--flush">
+      <h3 class="daysec__title">月イチ番街</h3>
+      <p class="daysec__note">毎月、一番街で何かが起こる。</p>
+      <div class="ncarousel" id="tsukiichiTrack"></div>
+      <div class="ndots" id="tsukiichiDots" aria-hidden="true"></div>
+    </section>
+
+    <!-- ---- 昼だから見える、一番街の顔 ---- -->
+    <section class="daysec">
+      <h3 class="daysec__title">昼だから見える、一番街の顔</h3>
+      <p class="daysec__note">こんなお店が、一番街にありました。</p>
+      <ul class="dayshops" id="dayShops"></ul>
+    </section>
+
+    <!-- ---- 昼の過ごし方 ---- -->
+    <section class="daysec">
+      <h3 class="daysec__title">昼の一番街の過ごし方</h3>
+      <ul class="dayways">
+        <li class="dayway"><span aria-hidden="true">🍽</span>ランチを食べる</li>
+        <li class="dayway"><span aria-hidden="true">🍺</span>昼飲みを楽しむ</li>
+        <li class="dayway"><span aria-hidden="true">🛍</span>雑貨を見る</li>
+        <li class="dayway"><span aria-hidden="true">🎬</span>映画を見る</li>
+        <li class="dayway"><span aria-hidden="true">🚶</span>店をさがしながら歩く</li>
+        <li class="dayway"><span aria-hidden="true">🎪</span>月イチ番街に行く</li>
+      </ul>
+    </section>
+
+    <footer class="foot">
+      <p>※お店・イベントの情報はすべて開発用のサンプル（ダミー）です。</p>
     </footer>
 
   </div>
@@ -163,9 +244,11 @@
 
 <script src="js/utils.js"></script>
 <script src="js/map.js"></script>
+<script src="js/carousel.js"></script>
 <script src="js/page-home.js"></script>
 <script src="js/page-shop.js"></script>
 <script src="js/page-events.js"></script>
+<script src="js/page-daytime.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -157,6 +157,63 @@ function openShopsAt(when) {
   return SHOPS.filter(shop => getOpenState(shop, when).open);
 }
 
+/* -------------------------------------------------------------
+ * そのお店で開催されるイベントを取り出します。
+ *
+ * お店データの eventIds（例: ['ev-007']）に書かれた id を
+ * data/events.js から探して返します。
+ *
+ * ・eventIds が無いお店 → 空っぽ（＝バナーは出ません）
+ * ・存在しない id が書かれていても、その分だけ無視して落ちません
+ * ----------------------------------------------------------- */
+function eventsOfShop(shop) {
+  if (!shop || !shop.eventIds || shop.eventIds.length === 0) return [];
+  return shop.eventIds
+    .map(id => EVENTS.find(ev => ev.id === id))
+    .filter(Boolean);
+}
+
+/* -------------------------------------------------------------
+ * イベントの「開始日時」を求めます。
+ *
+ * time は '18:30〜21:00' のように書く決まりなので、
+ * その先頭にある「時:分」を開始時刻として読み取ります。
+ * 読み取れなかったときは、その日の12:00とみなします
+ * （exact: false を返すので、画面にお断りを出せます）。
+ *
+ * イベント詳細ページと、トップページの昼アピールの
+ * 両方から使っています。
+ * ----------------------------------------------------------- */
+function eventStartDate(ev, dayKey) {
+  const when = dateFromKey(dayKey || ev.date);     // その日の 0:00
+  const m = (ev.time || '').match(/(\d{1,2}):(\d{2})/);
+  if (m) {
+    when.setHours(Number(m[1]), Number(m[2]), 0, 0);
+    return { when, exact: true };
+  }
+  when.setHours(12, 0, 0, 0);
+  return { when, exact: false };
+}
+
+/* -------------------------------------------------------------
+ * イベントの「開催時間帯」を分で返します。
+ *
+ * time は '11:00〜15:00' のように書く決まりなので、
+ * そこにある2つの「時:分」を、開始と終了として読み取ります。
+ *   → { start: 660, end: 900 }
+ *
+ * 時刻が2つそろっていない書き方のときは null を返します。
+ * （「開催中かどうか」を勝手に決めつけないためです）
+ * ----------------------------------------------------------- */
+function eventTimeRange(ev) {
+  const m = (ev.time || '').match(/(\d{1,2}):(\d{2})\D+(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  return {
+    start: Number(m[1]) * 60 + Number(m[2]),
+    end:   Number(m[3]) * 60 + Number(m[4]),
+  };
+}
+
 // 一覧やバッジに出す短い文言をつくります。
 function openStateLabel(st) {
   if (st.open) return `営業中 ・ ${prettyTime(st.until)} まで`;

@@ -179,8 +179,41 @@ function renderShopPage(id) {
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${shop.latlng[0]},${shop.latlng[1]}`;
 
+  /* ---------- 開催イベントのバナー ----------
+     お店データの eventIds に書かれたイベントだけを出します。
+     eventIds が無いお店では、下の eventBanners が空文字になるので
+     バナーそのものが作られません。
+
+     タップすると #/events/2026-09-18 に移動します。
+     ルーター（js/app.js）がこの日付を読み取って、
+     その日を選んだ状態でイベントカレンダーを開きます。 */
+  const eventBanners = eventsOfShop(shop).map(ev => {
+    const evDate   = dateFromKey(ev.date);
+    const dateText = `${evDate.getMonth() + 1}月${evDate.getDate()}日`
+                   + `（${DAY_LABELS[evDate.getDay()]}）`
+                   + `${ev.time ? ` ${ev.time}` : ''}`;
+    return `
+      <a class="evbanner" href="#/events/${escapeHtml(ev.date)}">
+        <span class="evbanner__imgwrap">
+          <span class="evbanner__ph" aria-hidden="true">🎪</span>
+          ${ev.image
+            ? `<img class="evbanner__img" src="${escapeHtml(ev.image)}" alt=""
+                    onerror="this.style.display='none'">`
+            : ''}
+        </span>
+        <span class="evbanner__body">
+          <span class="evbanner__label">開催イベント</span>
+          <span class="evbanner__title">${escapeHtml(ev.title)}</span>
+          <span class="evbanner__date">${escapeHtml(dateText)}</span>
+        </span>
+        <span class="evbanner__arrow" aria-hidden="true">›</span>
+      </a>`;
+  }).join('');
+
   /* ---------- 全体を組み立て ---------- */
   document.getElementById('shopBody').innerHTML = `
+    ${eventBanners}
+
     <div class="hero">${photo}</div>
 
     <div class="card">

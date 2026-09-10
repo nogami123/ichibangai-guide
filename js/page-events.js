@@ -20,24 +20,8 @@ function eventsOnDate(key) {
   });
 }
 
-/* -------------------------------------------------------------
- * イベントの「開始日時」を求めます。
- *
- * time は '18:30〜21:00' のように書く決まりなので、
- * その先頭にある「時:分」を開始時刻として読み取ります。
- * 読み取れなかったときは、その日の12:00とみなします
- * （exact: false を返すので、画面にお断りを出します）。
- * ----------------------------------------------------------- */
-function eventStartDate(ev, dayKey) {
-  const when = dateFromKey(dayKey || ev.date);     // その日の 0:00
-  const m = (ev.time || '').match(/(\d{1,2}):(\d{2})/);
-  if (m) {
-    when.setHours(Number(m[1]), Number(m[2]), 0, 0);
-    return { when, exact: true };
-  }
-  when.setHours(12, 0, 0, 0);
-  return { when, exact: false };
-}
+/* ※ eventStartDate()（イベントの開始日時を求める関数）は
+ *   トップページからも使うため、js/utils.js に置いてあります。 */
 
 /* -------------------------------------------------------------
  * イベント開催場所の地図
@@ -258,6 +242,11 @@ function renderEventDetail(key) {
           <h4 class="ev__title">${escapeHtml(ev.title)}</h4>
           ${ev.isDummy ? '<span class="tag tag--dummy">ダミー</span>' : ''}
         </div>
+
+        ${ev.image ? `
+          <img class="ev__img" src="${escapeHtml(ev.image)}"
+               alt="${escapeHtml(ev.title)}のちらし"
+               onerror="this.style.display='none'">` : ''}
 
         ${hasEventMap(ev) ? `<div class="evmap" id="evmap-${escapeHtml(ev.id)}"></div>` : ''}
 
